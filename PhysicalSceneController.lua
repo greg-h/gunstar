@@ -26,7 +26,6 @@ function PhysicalSceneController:update(dt)
     for key, object in pairs(self.objects) do
         object:update(dt)
         if object.body:isFrozen() then
-            self:log("%s is frozen", key)
             object:didLeaveWorldBoundaries(self)
         end
         if object.shouldBeRemoved then
@@ -69,9 +68,9 @@ function PhysicalSceneController:draw()
         debugText = debugText .. self.debugConsolePrompt .. self.debugConsoleScriptBuffer
         
         love.graphics.setColor(128, 128, 128, 128)
-        love.graphics.rectangle("fill", 0, 0, self.sceneWidth, self.debugConsoleLinesMax * 16)
+        love.graphics.rectangle("fill", 0, 0, self.sceneWidth, self.debugConsoleLinesMax * 15)
         love.graphics.setColor(255, 255, 255, 255)
-        love.graphics.print(debugText, 12, 12)
+        love.graphics.print(debugText, 12, 5)
     end
 end
 
@@ -92,10 +91,6 @@ function PhysicalSceneController:removeObject(key)
         object:removedFromScene(self)
         self.objectCount = self.objectCount -1
     end
-    
-    for i,shape in ipairs(object.shapes) do
-        shape:setMask(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16)
-    end 
     
     self.objects[key] = nil
 end
@@ -231,7 +226,7 @@ function PhysicalSceneController:initialize()
     self.showDebugConsole = false
     self.allowDebugConsole = false
     self.debugConsoleLines = 0
-    self.debugConsoleLinesMax = 25
+    self.debugConsoleLinesMax = 30
     self.debugConsolePrompt = "> "
     self.debugConsoleScriptBuffer = ""
     self.world:setCallbacks(self:didCollide(), self:isTouching(), self:didUncollide(), nil)
