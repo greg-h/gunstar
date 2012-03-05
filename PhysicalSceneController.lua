@@ -7,13 +7,32 @@ PhysicalSceneController = SceneController:subclass('PhysicalSceneController')
 function PhysicalSceneController:start()
 end
 
+function PhysicalSceneController:log(...)
+    s = string.format(unpack(arg))
+    table.insert(self.debugTextLines, s)
+    self.debugConsoleLines = self.debugConsoleLines + 1
+    
+    if self.debugConsoleLines > self.debugConsoleLinesMax then
+        table.remove(self.debugTextLines, 1)
+        self.debugConsoleLines = self.debugConsoleLines - 1
+    end
+end
+
 function PhysicalSceneController:update(dt)    
     if self.mouseJoint then
         self.mouseJoint:setTarget(self:getWorldPositionAtPosition(love.mouse.getPosition()))
     end
     
-    for i,v in ipairs(self.objects) do
-        v:update(dt)
+    for key, object in pairs(self.objects) do
+        object:update(dt)
+        if object.body:isFrozen() then
+            self:log("%s is frozen", key)
+            object:didLeaveWorldBoundaries(self)
+        end
+        if object.shouldBeRemoved then
+            self:log("Removing %s", key)
+            self:removeObject(key)
+        end
     end
     
     self.world:update(dt)
@@ -36,14 +55,24 @@ function PhysicalSceneController:draw()
     end
     love.graphics.pop()
     
-    if self.debugText then
-        love.graphics.print(self.debugText, 12, 12)
-    end
-    
     if self.showFPS then
+        love.graphics.setColor(255, 255, 255, 255)
         love.graphics.print(string.format("%2d fps", love.timer.getFPS()), self.sceneWidth-64, 12)
     end
     
+    if self.showDebugConsole then
+        debugText = ""
+        for i, line in ipairs(self.debugTextLines) do
+            debugText = string.format("%s%s\n", debugText, line) 
+        end
+        
+        debugText = debugText .. self.debugConsolePrompt .. self.debugConsoleScriptBuffer
+        
+        love.graphics.setColor(128, 128, 128, 128)
+        love.graphics.rectangle("fill", 0, 0, self.sceneWidth, self.debugConsoleLinesMax * 16)
+        love.graphics.setColor(255, 255, 255, 255)
+        love.graphics.print(debugText, 12, 12)
+    end
 end
 
 function PhysicalSceneController:addObjectWithKey(object, key)
@@ -71,11 +100,16 @@ function PhysicalSceneController:removeObject(key)
     self.objects[key] = nil
 end
 
+function PhysicalSceneController:removeLastMouseObject()
+    if self.lastMouseObject then
+        self:removeObject(self.lastMouseObject.name)
+    end
+end
+
 function PhysicalSceneController:mousepressed(x, y, button)
     if self.mouseInteract and button == 'l' then
         --find object at mouse position
         x, y = self:getWorldPositionAtPosition(love.mouse.getPosition())
-        --self.debugText = string.format("POS: (%d, %d) \nCAM: (%d, %d) S: %0.2f", x, y, self.cameraX, self.cameraY, self.cameraScale);
         self.mouseBody = love.physics.newBody(self.world, x, y, 0, 0)
         self.mouseShape = love.physics.newCircleShape(self.mouseBody, 0, 0, 1)
         self.mouseShape:setSensor(true)
@@ -96,7 +130,42 @@ function PhysicalSceneController:mousereleased(x, y, button)
     end
 end
 
+function PhysicalSceneController:runDebugScript(scriptText)
+    self:log(self.debugConsolePrompt .. scriptText)
+        
+    local func, err
+    func, err = loadstring(string.format("return function (self) %s end", scriptText))
+    if not func then
+        func, err = loadstring(string.format("return function (self) return %s end", scriptText))
+        if not func then
+            self:log("Error loading: %s", tostring(err))
+            return
+        end
+    end
+    
+    output = func()(self)
+    if output then
+        self:log(tostring(output))
+    end
+end
+
 function PhysicalSceneController:keypressed(key, unicode)
+    if key == "`" and self.allowDebugConsole then
+        self.debugConsoleScriptBuffer = ""
+        self.showDebugConsole = not self.showDebugConsole
+        return
+    end
+    
+    if self.showDebugConsole then
+        if key == 'return' then
+            self:runDebugScript(self.debugConsoleScriptBuffer)
+            self.debugConsoleScriptBuffer = ""
+        elseif key == "backspace" then
+            self.debugConsoleScriptBuffer = self.debugConsoleScriptBuffer:sub(1, self.debugConsoleScriptBuffer:len()-1)
+        elseif unicode > 31 and unicode < 127 then
+            self.debugConsoleScriptBuffer = self.debugConsoleScriptBuffer .. string.char(unicode)
+        end
+    end
 end
 
 function PhysicalSceneController:keyreleased(key, unicode)
@@ -113,11 +182,15 @@ function PhysicalSceneController:didCollide()
         if not self.mouseObject then
             if a == self.mouseShape then
                 self.mouseObject = b['object']
-                self.debugText = string.format("Obj: %s", self.mouseObject.name)
+                self.lastMouseObject = b['object']
+
+                self:log("Grabbed Obj: %s", self.mouseObject.name)
                 self.mouseJoint = love.physics.newMouseJoint(b['object'].body, self:getWorldPositionAtPosition(love.mouse.getPosition()))
             elseif b == self.mouseShape then
                 self.mouseObject = a['object']
-                self.debugText = string.format("Obj: %s", self.mouseObject.name)
+                self.lastMouseObject = a['object']
+
+                self:log("Grabbed Obj: %s", self.mouseObject.name)
                 self.mouseJoint = love.physics.newMouseJoint(a['object'].body, self:getWorldPositionAtPosition(love.mouse.getPosition()))
             end
         end
@@ -150,9 +223,16 @@ function PhysicalSceneController:initialize()
     self.cameraRotation = 0
     self.mouseInteract = false
     self.mouseBody = nil
+    self.lastMouseObject = nil
     self.mouseObject = nil
     self.mouseJoint = nil
-    self.debugText = nil
+    self.debugTextLines = {}
     self.showFPS = false
+    self.showDebugConsole = false
+    self.allowDebugConsole = false
+    self.debugConsoleLines = 0
+    self.debugConsoleLinesMax = 25
+    self.debugConsolePrompt = "> "
+    self.debugConsoleScriptBuffer = ""
     self.world:setCallbacks(self:didCollide(), self:isTouching(), self:didUncollide(), nil)
 end

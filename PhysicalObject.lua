@@ -16,6 +16,7 @@ function PhysicalObject:initialize(x, y, mass, rotationalInertia)
     self.body = nil
     self.name = nil
     self.setBodyFromImage = false
+    self.shouldBeRemoved = false
 end
 
 function PhysicalObject:setSize(w, h)
@@ -65,13 +66,15 @@ function PhysicalObject:addedToScene(scene)
 end
 
 function PhysicalObject:removedFromScene(scene)
-    for i,v in ipairs(self.shapes) do
-        v:destroy()
+    for i,shape in ipairs(self.shapes) do
+        shape:setMask(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16)
     end
     self.shapes = nil
-    
-    self.body:destroy()
     self.body = nil
+end
+
+function PhysicalObject:didLeaveWorldBoundaries(scene)
+    self.shouldBeRemoved = true
 end
 
 function PhysicalObject:update(dt)
