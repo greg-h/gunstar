@@ -77,7 +77,7 @@ end
 function PhysicalObject:update(dt)
 end
 
-function PhysicalObject:draw(cameraX, cameraY, cameraScale)
+function PhysicalObject:draw()
     x = self.body:getX()
     y = self.body:getY()
     angle = self.body:getAngle()

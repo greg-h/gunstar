@@ -1,5 +1,6 @@
 require 'SceneController'
 require 'PhysicalObject'
+-- TODO: fix camera and drawing coordinates
 
 PhysicalSceneController = SceneController:subclass('PhysicalSceneController')
 
@@ -18,19 +19,20 @@ function PhysicalSceneController:update(dt)
     self.world:update(dt)
 end
 
-function PhysicalSceneController:getWorldPositionAtPosition(x, y)
-    return (x-self.sceneHeight)/self.cameraScale, (y-self.sceneWidth)/self.cameraScale
+function PhysicalSceneController:getWorldPositionAtPosition(screenX, screenY)
+    worldX = (screenX - (self.sceneWidth/2))/self.cameraScale + self.cameraX
+    worldY = -(screenY - (self.sceneHeight/2))/self.cameraScale + self.cameraY
+    return worldX, worldY
 end
 
 function PhysicalSceneController:draw()
-    
     love.graphics.push()
-    love.graphics.translate(self.sceneHeight, self.sceneWidth)
-    love.graphics.scale(self.cameraScale, self.cameraScale)
+    love.graphics.translate(self.sceneWidth/2, self.sceneHeight/2)
+    love.graphics.scale(self.cameraScale, -self.cameraScale)
     love.graphics.translate(-self.cameraX, -self.cameraY)
-
+    
     for k,v in pairs(self.objects) do
-        v:draw(self.cameraX, self.cameraY, self.cameraScale)
+        v:draw()
     end
     love.graphics.pop()
     
@@ -73,6 +75,7 @@ function PhysicalSceneController:mousepressed(x, y, button)
     if self.mouseInteract and button == 'l' then
         --find object at mouse position
         x, y = self:getWorldPositionAtPosition(love.mouse.getPosition())
+        --self.debugText = string.format("POS: (%d, %d) \nCAM: (%d, %d) S: %0.2f", x, y, self.cameraX, self.cameraY, self.cameraScale);
         self.mouseBody = love.physics.newBody(self.world, x, y, 0, 0)
         self.mouseShape = love.physics.newCircleShape(self.mouseBody, 0, 0, 1)
         self.mouseShape:setSensor(true)
@@ -135,14 +138,16 @@ function PhysicalSceneController:stop()
 end
 
 function PhysicalSceneController:initialize()
-    self.sceneHeight = 300
-    self.sceneWidth = 400
-    self.world = love.physics.newWorld(-self.sceneHeight, -self.sceneHeight, self.sceneWidth, self.sceneWidth, 0, 1, true)
+    self.sceneHeight = 600
+    self.sceneWidth = 800
+    self.sceneBorder = 100
+    self.world = love.physics.newWorld(-self.sceneBorder, -self.sceneBorder, self.sceneWidth+self.sceneBorder, self.sceneHeight+self.sceneBorder)
     self.objects = {}
     self.objectCount = 0
-    self.cameraX = 0
-    self.cameraY = 0
+    self.cameraX = self.sceneWidth/2
+    self.cameraY = self.sceneHeight/2
     self.cameraScale = 1
+    self.cameraRotation = 0
     self.mouseInteract = false
     self.mouseBody = nil
     self.mouseObject = nil

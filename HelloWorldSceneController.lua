@@ -11,17 +11,17 @@ function HelloWorldSceneController:initialize()
     self.mouseInteract = true
     self.showFPS = true
     
-    self.world:setGravity(0, 500)
+    self.world:setGravity(0, -500)
         
     --obj2 = PhysicalObject:new(30, 30, 0, 0)
     --obj2:setImage(self.trollfaceImage)
     --obj2:setSize(self.trollfaceImage:getHeight()*.75, self.trollfaceImage:getWidth()*.75)
     --self:addObjectWithKey(obj2, "stationary trollface")
     
-    floor = PhysicalObject:new(0, 300, 0, 0)
-    floor:setSize(400, 30)
+    floor = PhysicalObject:new(400, 300, 0, 0)
+    floor:setSize(5, 5)
     floor:setPlaceholderRectangle(255, 255, 255, 255)
-    self:addObjectWithKey(floor, "floor")
+    self:addObjectWithKey(floor, "center")
 end
 
 function HelloWorldSceneController:keypressed(key, unicode)
@@ -36,11 +36,11 @@ function HelloWorldSceneController:keypressed(key, unicode)
     elseif key == 'right' then
         self.cameraX = self.cameraX + 10
     elseif key == 'up' then
-        self.cameraY = self.cameraY - 10
-    elseif key == 'down' then
         self.cameraY = self.cameraY + 10
+    elseif key == 'down' then
+        self.cameraY = self.cameraY - 10
     elseif key == 'r' then
-        obj = PhysicalObject:new(math.random(-10, 10), -200, 1, 1)
+        obj = PhysicalObject:new(math.random(-10, 10)+400, 500, 1, 1)
         obj:setImage(self.trollfaceImage)
         obj:setSize(self.trollfaceImage:getHeight()*.75, self.trollfaceImage:getWidth()*.75)
         self:addObjectWithKey(obj, string.format("trollface%d", self.unnamedObjectIndex))
