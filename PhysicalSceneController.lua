@@ -105,6 +105,8 @@ function PhysicalSceneController:mousepressed(x, y, button)
     if self.mouseInteract and button == 'l' then
         --find object at mouse position
         x, y = self:getWorldPositionAtPosition(love.mouse.getPosition())
+        self.lastMouseX = x
+        self.lastMouseY = y
         self.mouseBody = love.physics.newBody(self.world, x, y, 0, 0)
         self.mouseShape = love.physics.newCircleShape(self.mouseBody, 0, 0, 1)
         self.mouseShape:setSensor(true)
@@ -172,21 +174,23 @@ function PhysicalSceneController:setCamera(x, y, scale)
     self.cameraScale = scale
 end
 
+
+function PhysicalSceneController:didSelectObjectWithMouse(object)
+    self:log("Grabbed Obj: %s", object.name)
+    self.mouseJoint = love.physics.newMouseJoint(object.body, self:getWorldPositionAtPosition(love.mouse.getPosition()))
+end
+
 function PhysicalSceneController:didCollide()
     return function (a, b, coll)
         if not self.mouseObject then
             if a == self.mouseShape then
                 self.mouseObject = b['object']
                 self.lastMouseObject = b['object']
-
-                self:log("Grabbed Obj: %s", self.mouseObject.name)
-                self.mouseJoint = love.physics.newMouseJoint(b['object'].body, self:getWorldPositionAtPosition(love.mouse.getPosition()))
+                self:didSelectObjectWithMouse(b['object'])
             elseif b == self.mouseShape then
                 self.mouseObject = a['object']
                 self.lastMouseObject = a['object']
-
-                self:log("Grabbed Obj: %s", self.mouseObject.name)
-                self.mouseJoint = love.physics.newMouseJoint(a['object'].body, self:getWorldPositionAtPosition(love.mouse.getPosition()))
+                self:didSelectObjectWithMouse(a['object'])
             end
         end
     end
@@ -205,6 +209,10 @@ end
 function PhysicalSceneController:stop()
 end
 
+function PhysicalSceneController:lastMousePos()
+    return self.lastMouseX, self.lastMouseY
+end
+
 function PhysicalSceneController:initialize()
     self.sceneHeight = 600
     self.sceneWidth = 800
@@ -218,6 +226,8 @@ function PhysicalSceneController:initialize()
     self.cameraRotation = 0
     self.mouseInteract = false
     self.mouseBody = nil
+    self.lastMouseX = 0
+    self.lastMouseY = 0
     self.lastMouseObject = nil
     self.mouseObject = nil
     self.mouseJoint = nil

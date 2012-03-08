@@ -14,10 +14,12 @@ function HelloWorldSceneController:initialize()
     
     self.world:setGravity(0, -500)
         
-    --obj2 = PhysicalObject:new(30, 30, 0, 0)
-    --obj2:setImage(self.trollfaceImage)
-    --obj2:setSize(self.trollfaceImage:getHeight()*.75, self.trollfaceImage:getWidth()*.75)
-    --self:addObjectWithKey(obj2, "stationary trollface")
+    obj2 = PhysicalObject:new(400, 300, 15, 15)
+    obj2:setImage(self.trollfaceImage)
+    obj2:setSize(self.trollfaceImage:getHeight()*2, self.trollfaceImage:getWidth()*2)
+    obj2.drawingScale = 2.5
+    obj2:setPlaceholderRectangle(255, 0, 0, 128)
+    self:addObjectWithKey(obj2, "hugetrollface")
     
     floor = PhysicalObject:new(400, 0, 0, 0)
     floor:setSize(800, 10)
@@ -44,6 +46,7 @@ function HelloWorldSceneController:keypressed(key, unicode)
             obj = PhysicalObject:new(math.random(-10, 10)+400, 500, 1, 1)
             obj:setImage(self.trollfaceImage)
             obj:setSize(self.trollfaceImage:getHeight()*.75, self.trollfaceImage:getWidth()*.75)
+            obj:setPlaceholderRectangle(255, 0, 0, 128)
             self:addObjectWithKey(obj, string.format("trollface%d", self.unnamedObjectIndex))
             self.unnamedObjectIndex = self.unnamedObjectIndex + 1
         end

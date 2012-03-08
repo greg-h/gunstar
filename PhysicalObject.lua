@@ -40,14 +40,16 @@ function PhysicalObject:setImage(image)
     self.setBodyFromImage = true
 end
 
-function PhysicalObject:setPlaceholderRectangle(r, g, b, a)
-    self.drawables = {}
-    
+function PhysicalObject:setPlaceholderRectangle(r, g, b, a)    
     renderRectangle = function (x, y, angle, drawingScaleX, drawingScaleY, offsetX, offsetY) 
+        love.graphics.push()
         love.graphics.setColor(r, g, b, a)
         w = self.width
         h = self.height
-        love.graphics.rectangle("fill", x-(w/2), y-(h/2), w, h)
+        love.graphics.translate(x,y)
+        love.graphics.rotate(angle)
+        love.graphics.rectangle("fill", -(w/2), -(h/2), w, h)
+        love.graphics.pop()
     end
     
     table.insert(self.drawables, renderRectangle)
@@ -80,15 +82,19 @@ end
 function PhysicalObject:update(dt)
 end
 
+-- TODO fix drawing coordinates for image vs. drawable when scaled.
 function PhysicalObject:draw()
     x = self.body:getX()
     y = self.body:getY()
     angle = self.body:getAngle()
     for i,v in ipairs(self.drawables) do
         if type(v) == "function" then
-            v(x, y, angle, self.drawingScale, self.drawingScale, self.width/2, self.height/2)
+            --v(x, y, angle, self.drawingScale, self.drawingScale, self.width/2, self.height/2)
+            v(x, y, angle, self.drawingScale, self.drawingScale, 0, 0)
         else
-            love.graphics.draw(v, x, y, angle, self.drawingScale, self.drawingScale, self.width/2, self.height/2)
+            --love.graphics.draw(v, x, y, angle, self.drawingScale, self.drawingScale, self.width/2, self.height/2)
+            love.graphics.setColor(255, 255, 255, 255)
+            love.graphics.draw(v, x, y, angle, self.drawingScale, -self.drawingScale, (self.width/2)/self.drawingScale, (self.height/2)/self.drawingScale)
         end
     end
 end
