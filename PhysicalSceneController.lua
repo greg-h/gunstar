@@ -75,6 +75,8 @@ function PhysicalSceneController:draw()
 end
 
 function PhysicalSceneController:addObjectWithKey(object, key)
+    assert(object) 
+    assert(key)
     object:addedToScene(self)
     object.name = key
     self.objects[key] = object
@@ -174,11 +176,15 @@ function PhysicalSceneController:setCamera(x, y, scale)
     self.cameraScale = scale
 end
 
-
-function PhysicalSceneController:didSelectObjectWithMouse(object)
+function PhysicalSceneController:grabObjectWithMouse(object)
     self:log("Grabbed Obj: %s", object.name)
     self.mouseJoint = love.physics.newMouseJoint(object.body, self:getWorldPositionAtPosition(love.mouse.getPosition()))
 end
+
+function PhysicalSceneController:didSelectObjectWithMouse(object)
+    self:grabObjectWithMouse(object)
+end
+    
 
 function PhysicalSceneController:didCollide()
     return function (a, b, coll)

@@ -43,7 +43,7 @@ function HelloWorldSceneController:keypressed(key, unicode)
         elseif key == 'down' then
             self.cameraY = self.cameraY - 10
         elseif key == 'r' then
-            obj = PhysicalObject:new(math.random(-10, 10)+400, 500, 1, 1)
+            obj = PhysicalObject:new(math.random(-10, 10)+400, 570, 1, 1)
             obj:setImage(self.trollfaceImage)
             obj:setSize(self.trollfaceImage:getHeight()*.75, self.trollfaceImage:getWidth()*.75)
             obj:setPlaceholderRectangle(255, 0, 0, 128)

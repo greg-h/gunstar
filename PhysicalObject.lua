@@ -1,5 +1,4 @@
 require 'middleclass'
---require 'PhysicalSceneController'
 
 PhysicalObject = class('PhysicalObject')
 
@@ -15,7 +14,7 @@ function PhysicalObject:initialize(x, y, mass, rotationalInertia)
     self.shapes = {}
     self.body = nil
     self.name = nil
-    self.setBodyFromImage = false
+    self.setShapeFromSize = true
     self.shouldBeRemoved = false
 end
 
@@ -24,12 +23,8 @@ function PhysicalObject:setSize(w, h)
     self.height = h
     if self.body then
         shape = love.physics.newRectangleShape(self.body, 0, 0, self.width, self.height, 0)
-        collisionData = {}
-        collisionData['shape'] = shape
-        collisionData['object'] = self
-        shape:setData(collisionData)
+        self:addShape(shape)
     end
-    table.insert(self.shapes, shape)
 end
 
 function PhysicalObject:setImage(image)
@@ -37,7 +32,6 @@ function PhysicalObject:setImage(image)
     self.width = image:getWidth()
     self.height = image:getHeight()
     table.insert(self.drawables, image)
-    self.setBodyFromImage = true
 end
 
 function PhysicalObject:setPlaceholderRectangle(r, g, b, a)    
@@ -57,13 +51,24 @@ end
 
 function PhysicalObject:addedToScene(scene)
     self.body = love.physics.newBody(scene.world, self.initialX, self.initialY, self.initialMass, self.initialRotationalInertia)
+    if self.setShapeFromSize then
+        self:addShapeForSize()
+    end
+end
+
+function PhysicalObject:addShapeForSize()
     if self.width and self.height then
         shape = love.physics.newRectangleShape(self.body, 0, 0, self.width, self.height, 0)
-        collisionData = {}
-        collisionData['shape'] = shape
-        collisionData['object'] = self
-        shape:setData(collisionData)
+        self:addShape(shape)
     end
+end
+
+function PhysicalObject:addShape(shape)
+    assert(shape)
+    collisionData = {}
+    collisionData['shape'] = shape
+    collisionData['object'] = self
+    shape:setData(collisionData)
     table.insert(self.shapes, shape)
 end
 
