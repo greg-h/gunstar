@@ -25,9 +25,9 @@ function PhysicalSceneController:update(dt)
     
     for key, object in pairs(self.objects) do
         object:update(dt)
-        if object.body:isFrozen() then
-            object:didLeaveWorldBoundaries(self)
-        end
+        --if object.body:isFrozen() then
+        --    object:didLeaveWorldBoundaries(self)
+        --end
         if object.shouldBeRemoved then
             self:log("Removing %s", key)
             self:removeObject(key)
@@ -89,12 +89,17 @@ end
 
 function PhysicalSceneController:removeObject(key)
     object = self.objects[key]
-    if not object == nil then
+    if instanceOf(PhysicalObject, object) then
+        self:log("Removing %s from scene", key)
         object:removedFromScene(self)
         self.objectCount = self.objectCount -1
     end
-    
+        
     self.objects[key] = nil
+    
+    if not self.objects[key] then
+        self:log("Removed %s", key)
+    end
 end
 
 function PhysicalSceneController:removeLastMouseObject()
@@ -110,9 +115,9 @@ function PhysicalSceneController:mousepressed(x, y, button)
         self.lastMouseX = x
         self.lastMouseY = y
         self.mouseBody = love.physics.newBody(self.world, x, y, 0, 0)
-        self.mouseShape = love.physics.newCircleShape(self.mouseBody, 0, 0, 1)
-        self.mouseShape:setSensor(true)
-        self.mouseShape:setData(self.mouseShape)
+        self.mouseShape = love.physics.newCircleShape(0, 0, 1)
+        self.mouseFixture = love.physics.newFixture(self.mouseBody, self.mouseShape)
+        self.mouseFixture:setSensor(true)
     end
 end
 
@@ -122,10 +127,11 @@ function PhysicalSceneController:mousereleased(x, y, button)
             self.mouseJoint:destroy()
             self.mouseJoint = nil
         end
-        self.mouseShape:setMask(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16)
+        self.mouseFixture:setMask(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16)
         self.mouseShape = nil
         self.mouseBody = nil        
         self.mouseObject = nil
+        self.mouseFixture = nil
     end
 end
 
@@ -186,7 +192,7 @@ function PhysicalSceneController:didSelectObjectWithMouse(object)
 end
     
 
-function PhysicalSceneController:didCollide()
+function PhysicalSceneController:beginContact()
     return function (a, b, coll)
         if not self.mouseObject then
             if a == self.mouseShape then
@@ -202,15 +208,23 @@ function PhysicalSceneController:didCollide()
     end
 end
 
-function PhysicalSceneController:didUncollide()
+function PhysicalSceneController:endContact()
     return function (a, b, coll)
     end
 end
 
-function PhysicalSceneController:isTouching()
-    return function (a, b, coll) 
+function PhysicalSceneController:preContactSolve()
+    return function (a, b, coll)
     end
 end
+
+
+function PhysicalSceneController:postContactSolve()
+    return function (a, b, coll)
+    end
+end
+
+
 
 function PhysicalSceneController:stop()
 end
@@ -237,6 +251,7 @@ function PhysicalSceneController:initialize()
     self.lastMouseObject = nil
     self.mouseObject = nil
     self.mouseJoint = nil
+    self.mouseFixture = nil
     self.debugTextLines = {}
     self.showFPS = false
     self.showDebugConsole = false
@@ -245,5 +260,5 @@ function PhysicalSceneController:initialize()
     self.debugConsoleLinesMax = 30
     self.debugConsolePrompt = "> "
     self.debugConsoleScriptBuffer = ""
-    self.world:setCallbacks(self:didCollide(), self:isTouching(), self:didUncollide(), nil)
+    self.world:setCallbacks(self:beginContact(), self:endContact(), self:preContactSolve(), self:postContactSolve())
 end

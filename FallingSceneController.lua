@@ -19,7 +19,7 @@ function FallingSceneController:initialize()
     self.cameraScale = 1
     
     -- create floor
-    floor = PhysicalObject:new(400, 0, 0, 0)
+    floor = PhysicalObject:new(400, 0, "static")
     floor:setSize(800, 10)
     floor:setPlaceholderRectangle(100, 200, 100, 255)
     self:addObjectWithKey(floor, "floor")
@@ -39,7 +39,7 @@ function FallingSceneController:mousepressed(x, y, button)
     if button == 'l' and self.umbrellaJoint then
         self.umbrellaJoint:destroy()
         self.umbrellaJoint = nil 
-    elseif  button == 'l' and not self.umbrellaJoint then
+    elseif button == 'l' and not self.umbrellaJoint then
         self:log("Grabbed umbrella")
         self.umbrellaJoint = love.physics.newMouseJoint(self.umbrellaObject.body, self:getWorldPositionAtPosition(love.mouse.getPosition()))
     end
@@ -63,18 +63,27 @@ function FallingSceneController:didSelectObjectWithMouse(object)
     -- do nothing
 end
 
-function FallingSceneController:didCollide()
+function FallingSceneController:beginContact()
     -- TODO: must confrom mouseobject to the scene/object collision objects
     --superCollision = PhysicalSceneController.didCollide(self)
     return function (a, b, coll)
         --superCollision(a, b, coll)
         
-        if instanceOf(HeartObject, a['object']) and instanceOf(UmbrellaObject, b['object']) then
-            self:log("%s collided with umbrella, h = %d", a['object'].name, a['object'].health)
-            a['object']:collidedWithUmbrella()
-        elseif instanceOf(HeartObject, b['object']) and instanceOf(UmbrellaObject, a['object']) then
-            b['object']:collidedWithUmbrella()
-            self:log("%s collided with umbrella, h = %d", b['object'].name, b['object'].health)
+        heart = nil
+        umbrella = nil
+        
+        for k, objectData in pairs({a:getUserData(), b:getUserData()}) do
+            object = objectData['object']
+            if instanceOf(HeartObject, object) then
+                heart = object
+            elseif instanceOf(UmbrellaObject, object) then
+                umbrella = object
+            end
+        end
+        
+        if heart and umbrella then
+            self:log("%s collided with umbrella, h = %d", heart.name, heart.health)
+            heart:collidedWithUmbrella()
         end
     end
 end

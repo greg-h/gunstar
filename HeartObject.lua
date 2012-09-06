@@ -3,7 +3,7 @@ require 'PhysicalObject'
 HeartObject = PhysicalObject:subclass('HeartObject')
 
 function HeartObject:initialize(x, y)
-    PhysicalObject.initialize(self, x, y, 1, 1)
+    PhysicalObject.initialize(self, x, y, "dynamic")
 
     self.heartImage = love.graphics.newImage("heart.png")
     self:setImage(self.heartImage)
@@ -20,12 +20,11 @@ function HeartObject:addedToScene(scene)
     y0 = self.height/2
     
     self.drawingScale = 1
-    circle = love.physics.newCircleShape(self.body, 0, 0, (4.0/10)*(self.height/2))
-    circle:setDensity(200)
-    self:addShape(circle)
+    circle = love.physics.newCircleShape(0, 0, (4.0/10)*(self.height/2))
+    self:addShapeWithDensity(circle, 200)
     self.tint = {255,64,64,255}
     
-    self.body:setMassFromShapes()
+    self.body:resetMassData()
     self.body:setAngularDamping(5)
 
 end

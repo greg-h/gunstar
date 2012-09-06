@@ -2,16 +2,16 @@ require 'middleclass'
 
 PhysicalObject = class('PhysicalObject')
 
-function PhysicalObject:initialize(x, y, mass, rotationalInertia)
+function PhysicalObject:initialize(x, y, bodyType)
     self.initialX = x
     self.initialY = y
+    self.bodyType = bodyType
     self.width = 0
     self.height = 0
-    self.initialMass = mass
-    self.initialRotationalInertia = rotationalInertia
     self.drawables = {}
     self.drawingScale = 1
     self.shapes = {}
+    self.fixtures = {}
     self.body = nil
     self.name = nil
     self.setShapeFromSize = true
@@ -23,8 +23,8 @@ function PhysicalObject:setSize(w, h)
     self.width = w
     self.height = h
     if self.body then
-        shape = love.physics.newRectangleShape(self.body, 0, 0, self.width, self.height, 0)
-        self:addShape(shape)
+        shape = love.physics.newRectangleShape(0, 0, self.width, self.height, 0)
+        self:addShapeWithDensity(shape, 1)
     end
 end
 
@@ -51,7 +51,8 @@ function PhysicalObject:setPlaceholderRectangle(r, g, b, a)
 end
 
 function PhysicalObject:addedToScene(scene)
-    self.body = love.physics.newBody(scene.world, self.initialX, self.initialY, self.initialMass, self.initialRotationalInertia)
+    --self.body = love.physics.newBody(scene.world, self.initialX, self.initialY, self.initialMass, self.initialRotationalInertia)
+    self.body = love.physics.newBody(scene.world, self.initialX, self.initialY, self.bodyType)
     if self.setShapeFromSize then
         self:addShapeForSize()
     end
@@ -59,24 +60,41 @@ end
 
 function PhysicalObject:addShapeForSize()
     if self.width and self.height then
-        shape = love.physics.newRectangleShape(self.body, 0, 0, self.width, self.height, 0)
+        shape = love.physics.newRectangleShape(0, 0, self.width, self.height)
         self:addShape(shape)
     end
 end
 
-function PhysicalObject:addShape(shape)
+function PhysicalObject:addShapeWithFixture(shape, fixture)
     assert(shape)
+    assert(fixture)
+    
     collisionData = {}
-    collisionData['shape'] = shape
     collisionData['object'] = self
-    shape:setData(collisionData)
+    collisionData['shape'] = shape
+    collisionData['fixture'] = fixture
+    
+    fixture:setUserData(collisionData)
+
+    table.insert(self.fixtures, fixture)
     table.insert(self.shapes, shape)
 end
 
+function PhysicalObject:addShapeWithDensity(shape, density)
+    assert(shape)
+    assert(density)
+    fixture = love.physics.newFixture(self.body, shape, density)
+    self:addShapeWithFixture(shape, fixture)
+end
+
+function PhysicalObject:addShape(shape)
+    assert(shape)
+    fixture = love.physics.newFixture(self.body, shape)
+    self:addShapeWithFixture(shape, fixture)
+end
+
 function PhysicalObject:removedFromScene(scene)
-    for i,shape in ipairs(self.shapes) do
-        shape:setMask(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16)
-    end
+    self.body:destroy()
     self.shapes = nil
     self.body = nil
 end
