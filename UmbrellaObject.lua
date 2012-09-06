@@ -22,7 +22,7 @@ function UmbrellaObject:addedToScene(scene)
     self:addShape(self.stem)
     
     self.handle = love.physics.newRectangleShape(self.body, 0, -110, 20, 20, 0)
-    self.handle:setDensity(600)
+    self.handle:setDensity(90)
     self:addShape(self.handle)
 
     self.hood = love.physics.newPolygonShape(self.body, 
@@ -32,7 +32,7 @@ function UmbrellaObject:addedToScene(scene)
         x0 + 195,   y0 - 45,
         x0 + 265,   y0 - 105)
     
-    self.hood:setDensity(10)
+    self.hood:setDensity(1)
     self.hood:setRestitution(0.60)
     self:addShape(self.hood)
     

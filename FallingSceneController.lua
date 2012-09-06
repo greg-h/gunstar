@@ -17,6 +17,7 @@ function FallingSceneController:initialize()
     
     self.world:setGravity(0, -800)
     self.cameraScale = 1
+    
     -- create floor
     floor = PhysicalObject:new(400, 0, 0, 0)
     floor:setSize(800, 10)
@@ -35,7 +36,10 @@ end
 function FallingSceneController:mousepressed(x, y, button)
     PhysicalSceneController.mousepressed(self, x, y, button)
     
-    if button == 'l' then
+    if button == 'l' and self.umbrellaJoint then
+        self.umbrellaJoint:destroy()
+        self.umbrellaJoint = nil 
+    elseif  button == 'l' and not self.umbrellaJoint then
         self:log("Grabbed umbrella")
         self.umbrellaJoint = love.physics.newMouseJoint(self.umbrellaObject.body, self:getWorldPositionAtPosition(love.mouse.getPosition()))
     end
@@ -44,10 +48,7 @@ end
 function FallingSceneController:mousereleased(x, y, button)
     PhysicalSceneController.mousereleased(self, x, y, button)
     
-    if button == 'l' and self.umbrellaJoint then
-        self.umbrellaJoint:destroy()
-        self.umbrellaJoint = nil 
-    end
+    
 end
 
 function FallingSceneController:update(dt)
@@ -60,6 +61,22 @@ end
 
 function FallingSceneController:didSelectObjectWithMouse(object)
     -- do nothing
+end
+
+function FallingSceneController:didCollide()
+    -- TODO: must confrom mouseobject to the scene/object collision objects
+    --superCollision = PhysicalSceneController.didCollide(self)
+    return function (a, b, coll)
+        --superCollision(a, b, coll)
+        
+        if instanceOf(HeartObject, a['object']) and instanceOf(UmbrellaObject, b['object']) then
+            self:log("%s collided with umbrella, h = %d", a['object'].name, a['object'].health)
+            a['object']:collidedWithUmbrella()
+        elseif instanceOf(HeartObject, b['object']) and instanceOf(UmbrellaObject, a['object']) then
+            b['object']:collidedWithUmbrella()
+            self:log("%s collided with umbrella, h = %d", b['object'].name, b['object'].health)
+        end
+    end
 end
 
 function FallingSceneController:keypressed(key, unicode)

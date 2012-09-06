@@ -16,6 +16,7 @@ function PhysicalObject:initialize(x, y, mass, rotationalInertia)
     self.name = nil
     self.setShapeFromSize = true
     self.shouldBeRemoved = false
+    self.tint = {255, 255, 255, 255}
 end
 
 function PhysicalObject:setSize(w, h)
@@ -92,13 +93,11 @@ function PhysicalObject:draw()
     x = self.body:getX()
     y = self.body:getY()
     angle = self.body:getAngle()
+    love.graphics.setColor(unpack(self.tint))
     for i,v in ipairs(self.drawables) do
         if type(v) == "function" then
-            --v(x, y, angle, self.drawingScale, self.drawingScale, self.width/2, self.height/2)
             v(x, y, angle, self.drawingScale, self.drawingScale, 0, 0)
         else
-            --love.graphics.draw(v, x, y, angle, self.drawingScale, self.drawingScale, self.width/2, self.height/2)
-            love.graphics.setColor(255, 255, 255, 255)
             love.graphics.draw(v, x, y, angle, self.drawingScale, -self.drawingScale, (self.width/2)/self.drawingScale, (self.height/2)/self.drawingScale)
         end
     end
