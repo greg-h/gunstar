@@ -15,12 +15,14 @@ function FallingSceneController:initialize()
     
     self.umbrellaJoint = nil
     
-    self.world:setGravity(0, -800)
+    self.world:setGravity(0, -600)
     self.cameraScale = 1
+    
+    self.lastHeart = love.timer.getTime()
     
     -- create floor
     floor = PhysicalObject:new(400, 0, "static")
-    floor:setSize(800, 10)
+    floor:setSize(1000, 10)
     floor:setPlaceholderRectangle(100, 200, 100, 255)
     self:addObjectWithKey(floor, "floor")
     
@@ -29,8 +31,14 @@ function FallingSceneController:initialize()
 end
 
 function FallingSceneController:createUmbrella()
-    self.umbrellaObject = UmbrellaObject:new(400, 300)
+    self.umbrellaObject = UmbrellaObject:new(400, 600)
     self:addObjectWithKey(self.umbrellaObject, "umbrella")
+end
+
+function FallingSceneController:createHeart()
+    obj = HeartObject:new(math.random(10, 790), 600)
+    self:addObjectWithKey(obj, string.format("heart%d", self.unnamedObjectIndex))
+    self.unnamedObjectIndex = self.unnamedObjectIndex + 1
 end
 
 function FallingSceneController:mousepressed(x, y, button)
@@ -53,6 +61,16 @@ end
 
 function FallingSceneController:update(dt)
     PhysicalSceneController.update(self, dt)
+    
+    currentTime = love.timer.getTime()
+    if currentTime - self.lastHeart  > 0.33 then
+        self:createHeart()
+        self.lastHeart = currentTime
+    end
+    
+    if not self.umbrellaObject then
+        self:createUmbrella()
+    end
 
     if self.umbrellaJoint then
         self.umbrellaJoint:setTarget(self:getWorldPositionAtPosition(love.mouse.getPosition()))
@@ -71,6 +89,7 @@ function FallingSceneController:beginContact()
         
         heart = nil
         umbrella = nil
+        floor = nil
         
         for k, objectData in pairs({a:getUserData(), b:getUserData()}) do
             object = objectData['object']
@@ -78,12 +97,17 @@ function FallingSceneController:beginContact()
                 heart = object
             elseif instanceOf(UmbrellaObject, object) then
                 umbrella = object
+            elseif object.name == "floor" then
+                floor = object
             end
         end
         
         if heart and umbrella then
             self:log("%s collided with umbrella, h = %d", heart.name, heart.health)
             heart:collidedWithUmbrella()
+        elseif heart and floor then
+            self:log("%s collided with floor", heart.name)
+            heart:collidedWithFloor()
         end
     end
 end
@@ -104,9 +128,8 @@ function FallingSceneController:keypressed(key, unicode)
         elseif key == 'down' then
             self.cameraY = self.cameraY - 10
         elseif key == 'r' then
-            obj = HeartObject:new(math.random(10, 790), 600)
-            self:addObjectWithKey(obj, string.format("heart%d", self.unnamedObjectIndex))
-            self.unnamedObjectIndex = self.unnamedObjectIndex + 1
+            self:createHeart()
         end
     end
 end
+

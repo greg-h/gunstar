@@ -103,6 +103,10 @@ function PhysicalObject:didLeaveWorldBoundaries(scene)
     self.shouldBeRemoved = true
 end
 
+function PhysicalObject:deferredRemoval()
+    self.shouldBeRemoved = true
+end 
+
 function PhysicalObject:update(dt)
 end
 

@@ -25,11 +25,13 @@ function PhysicalSceneController:update(dt)
     
     for key, object in pairs(self.objects) do
         object:update(dt)
-        --if object.body:isFrozen() then
-        --    object:didLeaveWorldBoundaries(self)
-        --end
+        x = object.body:getX()
+        y = object.body:getY()
+        if x < -self.sceneBorder or y < -self.sceneBorder or x > (self.sceneWidth + self.sceneBorder) or y > (self.sceneHeight + self.sceneBorder) then
+            object:didLeaveWorldBoundaries(self)
+        end
         if object.shouldBeRemoved then
-            self:log("Removing %s", key)
+            self:log("Executing deferred removal of %s", key)
             self:removeObject(key)
         end
     end

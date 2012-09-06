@@ -10,6 +10,9 @@ function HeartObject:initialize(x, y)
 
     self.setShapeFromSize = false
     
+    -- load sounds
+    self.heartSnapSoundSource = love.audio.newSource("Snap.mp3", "static")
+    
     self.health = 100
 end
 
@@ -31,7 +34,7 @@ end
 
 function HeartObject:collidedWithUmbrella()
     if self.health <= 0 then
-        self.shouldBeRemoved = true
+        self:deferredRemoval()
         return
     end
     
@@ -40,6 +43,11 @@ function HeartObject:collidedWithUmbrella()
     self.tint = {255, 64 + coef*192, 64 + coef*192, 255}
     
     if self.health <= 0 then
-        self.shouldBeRemoved = true
+        love.audio.play(self.heartSnapSoundSource)
+        self:deferredRemoval()
     end    
+end
+
+function HeartObject:collidedWithFloor()
+    self:deferredRemoval()
 end

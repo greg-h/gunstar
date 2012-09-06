@@ -37,3 +37,9 @@ function UmbrellaObject:addedToScene(scene)
     self.body:resetMassData()
     self.body:setAngularDamping(5)    
 end
+
+function UmbrellaObject:removedFromScene(scene)
+    PhysicalObject.removedFromScene(self, scene)
+    scene.umbrellaJoint = nil
+    scene.umbrellaObject = nil
+end
