@@ -19,6 +19,8 @@ function PhysicalSceneController:log(...)
 end
 
 function PhysicalSceneController:update(dt)    
+    SceneController.update(self, dt)
+    
     if self.mouseJoint then
         self.mouseJoint:setTarget(self:getWorldPositionAtPosition(love.mouse.getPosition()))
     end
@@ -31,7 +33,6 @@ function PhysicalSceneController:update(dt)
             object:didLeaveWorldBoundaries(self)
         end
         if object.shouldBeRemoved then
-            self:log("Executing deferred removal of %s", key)
             self:removeObject(key)
         end
     end
@@ -92,16 +93,11 @@ end
 function PhysicalSceneController:removeObject(key)
     object = self.objects[key]
     if instanceOf(PhysicalObject, object) then
-        self:log("Removing %s from scene", key)
         object:removedFromScene(self)
         self.objectCount = self.objectCount -1
     end
         
     self.objects[key] = nil
-    
-    if not self.objects[key] then
-        self:log("Removed %s", key)
-    end
 end
 
 function PhysicalSceneController:removeLastMouseObject()
@@ -236,6 +232,7 @@ function PhysicalSceneController:lastMousePos()
 end
 
 function PhysicalSceneController:initialize()
+    SceneController.initialize(self)
     self.sceneHeight = 600
     self.sceneWidth = 800
     self.sceneBorder = 100

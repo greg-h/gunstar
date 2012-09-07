@@ -18,8 +18,6 @@ function FallingSceneController:initialize()
     self.world:setGravity(0, -600)
     self.cameraScale = 1
     
-    self.lastHeart = love.timer.getTime()
-    
     -- create floor
     floor = PhysicalObject:new(400, 0, "static")
     floor:setSize(1000, 10)
@@ -28,11 +26,21 @@ function FallingSceneController:initialize()
     
     -- create umbrella
     self:createUmbrella()
+    
+    self.heartMaxInterval = 50
+    self:createHeartsForever()
 end
 
 function FallingSceneController:createUmbrella()
     self.umbrellaObject = UmbrellaObject:new(400, 600)
     self:addObjectWithKey(self.umbrellaObject, "umbrella")
+end
+
+function FallingSceneController:createHeartsForever()
+    self:createHeart()
+    self:timerWithDurationAndCallback(math.random(self.heartMaxInterval)/1000.0, function()
+        self:createHeartsForever()
+    end)
 end
 
 function FallingSceneController:createHeart()
@@ -61,12 +69,6 @@ end
 
 function FallingSceneController:update(dt)
     PhysicalSceneController.update(self, dt)
-    
-    currentTime = love.timer.getTime()
-    if currentTime - self.lastHeart  > 0.33 then
-        self:createHeart()
-        self.lastHeart = currentTime
-    end
     
     if not self.umbrellaObject then
         self:createUmbrella()
@@ -103,10 +105,8 @@ function FallingSceneController:beginContact()
         end
         
         if heart and umbrella then
-            self:log("%s collided with umbrella, h = %d", heart.name, heart.health)
             heart:collidedWithUmbrella()
         elseif heart and floor then
-            self:log("%s collided with floor", heart.name)
             heart:collidedWithFloor()
         end
     end

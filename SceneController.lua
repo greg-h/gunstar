@@ -24,7 +24,23 @@ end
 SceneController = class('SceneController')
 
 function SceneController:initialize()
+    self:cancelAllTimers()
 end
+
+function SceneController:timerWithDurationAndCallback(duration, f)
+    currentTime = love.timer.getTime()
+    targetTime = currentTime + duration
+    timerData = {}
+    timerData['targetTime'] = targetTime
+    timerData['function'] = f
+    table.insert(self.timers, timerData)
+    table.sort(self.timers, function(a,b) return a['targetTime']<b['targetTime'] end)
+end
+
+function SceneController:cancelAllTimers()
+    self.timers = {}
+end
+
 
 function SceneController:pushed()
 end
@@ -33,6 +49,12 @@ function SceneController:start()
 end
 
 function SceneController:update(dt)
+    currentTime = love.timer.getTime()
+    
+    while self.timers[1] and self.timers[1]['targetTime'] < currentTime do
+        self.timers[1]['function']()
+        table.remove(self.timers, 1)
+    end
 end
 
 function SceneController:draw()
