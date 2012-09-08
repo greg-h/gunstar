@@ -94,11 +94,16 @@ function PhysicalObject:addShape(shape)
 end
 
 function PhysicalObject:removedFromScene(scene)
-    self.body:destroy()
-    self.shapes = nil
-    self.body = nil
+    for i, f in ipairs(self.fixtures) do
+        f:destroy()
+    end
     self.fixtures = nil
+    
+    self.shapes = nil
     self.drawables = nil
+    
+    self.body:destroy()
+    self.body = nil
 end
 
 function PhysicalObject:didLeaveWorldBoundaries(scene)
