@@ -6,6 +6,9 @@ FallingSceneController = PhysicalSceneController:subclass('FallingSceneControlle
 
 function FallingSceneController:initialize()
     PhysicalSceneController.initialize(self, 1000, 1000)
+    self.screenWidth = 1024
+    self.screenHeight = 768
+    love.graphics.setMode(1024, 768)
     
     self.unnamedObjectIndex = 0
 
@@ -27,7 +30,8 @@ function FallingSceneController:initialize()
     -- create umbrella
     self:createUmbrella()
     
-    self.heartMaxInterval = 50
+    self.heartMaxInterval = 10
+    self.heartMultiplier = 4
     self:createHeartsForever()
     
 end
@@ -38,14 +42,16 @@ function FallingSceneController:createUmbrella()
 end
 
 function FallingSceneController:createHeartsForever()
-    self:createHeart()
+    for i=1, self.heartMultiplier do
+        self:createHeart()
+    end
     self:timerWithDurationAndCallback(math.random(self.heartMaxInterval)/1000.0, function()
         self:createHeartsForever()
     end)
 end
 
 function FallingSceneController:createHeart()
-    obj = HeartObject:new(math.random(10, 790), 600)
+    obj = HeartObject:new(math.random(10, self.screenWidth-10), self.screenHeight + 10)
     self:addObjectWithKey(obj, string.format("heart%d", self.unnamedObjectIndex))
     self.unnamedObjectIndex = self.unnamedObjectIndex + 1
 end
