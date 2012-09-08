@@ -2,10 +2,12 @@ require 'PhysicalObject'
 
 UmbrellaObject = PhysicalObject:subclass('UmbrellaObject')
 
+local UmbrellaImage = love.graphics.newImage("umbrella.png")
+
 function UmbrellaObject:initialize(x, y)
     PhysicalObject.initialize(self, x, y, "dynamic")
 
-    self.umbrellaImage = love.graphics.newImage("umbrella.png")
+    self.umbrellaImage = UmbrellaImage
     self:setImage(self.umbrellaImage)
 
     self.setShapeFromSize = false

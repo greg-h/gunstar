@@ -8,7 +8,7 @@ function PhysicalSceneController:start()
 end
 
 function PhysicalSceneController:log(...)
-    s = string.format(unpack(arg))
+    local s = string.format(unpack(arg))
     table.insert(self.debugTextLines, s)
     self.debugConsoleLines = self.debugConsoleLines + 1
     
@@ -27,8 +27,8 @@ function PhysicalSceneController:update(dt)
     
     for key, object in pairs(self.objects) do
         object:update(dt)
-        x = object.body:getX()
-        y = object.body:getY()
+        local x = object.body:getX()
+        local y = object.body:getY()
         if x < -self.sceneBorder or y < -self.sceneBorder or x > (self.sceneWidth + self.sceneBorder) or y > (self.sceneHeight + self.sceneBorder) then
             object:didLeaveWorldBoundaries(self)
         end
@@ -41,9 +41,14 @@ function PhysicalSceneController:update(dt)
 end
 
 function PhysicalSceneController:getWorldPositionAtPosition(screenX, screenY)
-    worldX = (screenX - (self.screenWidth/2))/self.cameraScale + self.cameraX
-    worldY = -(screenY - (self.screenHeight/2))/self.cameraScale + self.cameraY
+    local worldX = (screenX - (self.screenWidth/2))/self.cameraScale + self.cameraX
+    local worldY = -(screenY - (self.screenHeight/2))/self.cameraScale + self.cameraY
     return worldX, worldY
+end
+
+function PhysicalSceneController:worldStats()
+    local w = self.world
+    self:log("World stats: %d objects, %d bodies, %d contacts, %d joints, memory used: %d KB", self.objectCount, w:getBodyCount(), w:getContactCount(), w:getJointCount(), collectgarbage("count"))
 end
 
 function PhysicalSceneController:draw()
@@ -63,7 +68,7 @@ function PhysicalSceneController:draw()
     end
     
     if self.showDebugConsole then
-        debugText = ""
+        local debugText = ""
         for i, line in ipairs(self.debugTextLines) do
             debugText = string.format("%s%s\n", debugText, line) 
         end
@@ -71,7 +76,7 @@ function PhysicalSceneController:draw()
         debugText = debugText .. self.debugConsolePrompt .. self.debugConsoleScriptBuffer
         
         love.graphics.setColor(128, 128, 128, 128)
-        love.graphics.rectangle("fill", 0, 0, self.sceneWidth, self.debugConsoleLinesMax * 15)
+        love.graphics.rectangle("fill", 0, 0, self.screenWidth, self.debugConsoleLinesMax * 15)
         love.graphics.setColor(255, 255, 255, 255)
         love.graphics.print(debugText, 12, 5)
     end
@@ -264,4 +269,9 @@ function PhysicalSceneController:initialize(sceneWidth, sceneHeight, sceneBorder
     self.debugConsolePrompt = "> "
     self.debugConsoleScriptBuffer = ""
     self.world:setCallbacks(self:beginContact(), self:endContact(), self:preContactSolve(), self:postContactSolve())
+end
+
+
+function SceneController:popped()
+    self.world:destroy()
 end

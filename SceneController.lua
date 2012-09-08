@@ -30,9 +30,9 @@ function SceneController:initialize()
 end
 
 function SceneController:timerWithDurationAndCallback(duration, f)
-    currentTime = love.timer.getTime()
-    targetTime = currentTime + duration
-    timerData = {}
+    local currentTime = love.timer.getTime()
+    local targetTime = currentTime + duration
+    local timerData = {}
     timerData['targetTime'] = targetTime
     timerData['function'] = f
     table.insert(self.timers, timerData)
@@ -43,15 +43,8 @@ function SceneController:cancelAllTimers()
     self.timers = {}
 end
 
-
-function SceneController:pushed()
-end
-
-function SceneController:start()
-end
-
 function SceneController:update(dt)
-    currentTime = love.timer.getTime()
+    local currentTime = love.timer.getTime()
     
     while self.timers[1] and self.timers[1]['targetTime'] < currentTime do
         self.timers[1]['function']()
@@ -74,8 +67,14 @@ end
 function SceneController:keyreleased(key, unicode)
 end
 
-function SceneController:stop()
+function SceneController:pushed()
 end
 
 function SceneController:popped()
+end
+
+function SceneController:start()
+end
+
+function SceneController:stop()
 end

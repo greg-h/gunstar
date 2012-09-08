@@ -33,7 +33,6 @@ function FallingSceneController:initialize()
     self.heartMaxInterval = 10
     self.heartMultiplier = 4
     self:createHeartsForever()
-    
 end
 
 function FallingSceneController:createUmbrella()
@@ -51,7 +50,7 @@ function FallingSceneController:createHeartsForever()
 end
 
 function FallingSceneController:createHeart()
-    obj = HeartObject:new(math.random(10, self.screenWidth-10), self.screenHeight + 10)
+    local obj = HeartObject:new(math.random(10, self.screenWidth-10), self.screenHeight + 10)
     self:addObjectWithKey(obj, string.format("heart%d", self.unnamedObjectIndex))
     self.unnamedObjectIndex = self.unnamedObjectIndex + 1
 end
@@ -94,9 +93,9 @@ function FallingSceneController:beginContact()
     return function (a, b, coll)
         --superCollision(a, b, coll)
         
-        heart = nil
-        umbrella = nil
-        floor = nil
+        local heart = nil
+        local umbrella = nil
+        local floor = nil
         
         for k, objectData in pairs({a:getUserData(), b:getUserData()}) do
             object = objectData['object']

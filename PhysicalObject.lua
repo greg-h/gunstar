@@ -23,7 +23,7 @@ function PhysicalObject:setSize(w, h)
     self.width = w
     self.height = h
     if self.body then
-        shape = love.physics.newRectangleShape(0, 0, self.width, self.height, 0)
+        local shape = love.physics.newRectangleShape(0, 0, self.width, self.height, 0)
         self:addShapeWithDensity(shape, 1)
     end
 end
@@ -36,11 +36,11 @@ function PhysicalObject:setImage(image)
 end
 
 function PhysicalObject:setPlaceholderRectangle(r, g, b, a)    
-    renderRectangle = function (x, y, angle, drawingScaleX, drawingScaleY, offsetX, offsetY) 
+    local renderRectangle = function (x, y, angle, drawingScaleX, drawingScaleY, offsetX, offsetY) 
         love.graphics.push()
         love.graphics.setColor(r, g, b, a)
-        w = self.width
-        h = self.height
+        local w = self.width
+        local h = self.height
         love.graphics.translate(x,y)
         love.graphics.rotate(angle)
         love.graphics.rectangle("fill", -(w/2), -(h/2), w, h)
@@ -60,7 +60,7 @@ end
 
 function PhysicalObject:addShapeForSize()
     if self.width and self.height then
-        shape = love.physics.newRectangleShape(0, 0, self.width, self.height)
+        local shape = love.physics.newRectangleShape(0, 0, self.width, self.height)
         self:addShape(shape)
     end
 end
@@ -69,7 +69,7 @@ function PhysicalObject:addShapeWithFixture(shape, fixture)
     assert(shape)
     assert(fixture)
     
-    collisionData = {}
+    local collisionData = setmetatable({}, {__mode="kv"})
     collisionData['object'] = self
     collisionData['shape'] = shape
     collisionData['fixture'] = fixture
@@ -83,13 +83,13 @@ end
 function PhysicalObject:addShapeWithDensity(shape, density)
     assert(shape)
     assert(density)
-    fixture = love.physics.newFixture(self.body, shape, density)
+    local fixture = love.physics.newFixture(self.body, shape, density)
     self:addShapeWithFixture(shape, fixture)
 end
 
 function PhysicalObject:addShape(shape)
     assert(shape)
-    fixture = love.physics.newFixture(self.body, shape)
+    local fixture = love.physics.newFixture(self.body, shape)
     self:addShapeWithFixture(shape, fixture)
 end
 
@@ -97,6 +97,8 @@ function PhysicalObject:removedFromScene(scene)
     self.body:destroy()
     self.shapes = nil
     self.body = nil
+    self.fixtures = nil
+    self.drawables = nil
 end
 
 function PhysicalObject:didLeaveWorldBoundaries(scene)
@@ -112,9 +114,9 @@ end
 
 -- TODO fix drawing coordinates for image vs. drawable when scaled.
 function PhysicalObject:draw()
-    x = self.body:getX()
-    y = self.body:getY()
-    angle = self.body:getAngle()
+    local x = self.body:getX()
+    local y = self.body:getY()
+    local angle = self.body:getAngle()
     love.graphics.setColor(unpack(self.tint))
     for i,v in ipairs(self.drawables) do
         if type(v) == "function" then
