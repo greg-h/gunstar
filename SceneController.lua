@@ -25,6 +25,8 @@ SceneController = class('SceneController')
 
 function SceneController:initialize()
     self:cancelAllTimers()
+    self.screenWidth = 800
+    self.screenHeight = 600
 end
 
 function SceneController:timerWithDurationAndCallback(duration, f)

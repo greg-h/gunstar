@@ -41,14 +41,14 @@ function PhysicalSceneController:update(dt)
 end
 
 function PhysicalSceneController:getWorldPositionAtPosition(screenX, screenY)
-    worldX = (screenX - (self.sceneWidth/2))/self.cameraScale + self.cameraX
-    worldY = -(screenY - (self.sceneHeight/2))/self.cameraScale + self.cameraY
+    worldX = (screenX - (self.screenWidth/2))/self.cameraScale + self.cameraX
+    worldY = -(screenY - (self.screenHeight/2))/self.cameraScale + self.cameraY
     return worldX, worldY
 end
 
 function PhysicalSceneController:draw()
     love.graphics.push()
-    love.graphics.translate(self.sceneWidth/2, self.sceneHeight/2)
+    love.graphics.translate(self.screenWidth/2, self.screenHeight/2)
     love.graphics.scale(self.cameraScale, -self.cameraScale)
     love.graphics.translate(-self.cameraX, -self.cameraY)
     
@@ -59,7 +59,7 @@ function PhysicalSceneController:draw()
     
     if self.showFPS then
         love.graphics.setColor(255, 255, 255, 255)
-        love.graphics.print(string.format("%2d fps", love.timer.getFPS()), self.sceneWidth-64, 12)
+        love.graphics.print(string.format("%2d fps", love.timer.getFPS()), self.screenWidth-64, 12)
     end
     
     if self.showDebugConsole then
@@ -107,9 +107,13 @@ function PhysicalSceneController:removeLastMouseObject()
 end
 
 function PhysicalSceneController:mousepressed(x, y, button)
+    if button == 'l' then
+        wx, wy = self:getWorldPositionAtPosition(x, y)
+        self:log("Clicked screen pos: (%d, %d), world pos: (%d, %d)", x, y, wx, wy)
+    end
     if self.mouseInteract and button == 'l' then
         --find object at mouse position
-        x, y = self:getWorldPositionAtPosition(love.mouse.getPosition())
+        x, y = self:getWorldPositionAtPosition(x, y)
         self.lastMouseX = x
         self.lastMouseY = y
         self.mouseBody = love.physics.newBody(self.world, x, y, 0, 0)
@@ -231,11 +235,11 @@ function PhysicalSceneController:lastMousePos()
     return self.lastMouseX, self.lastMouseY
 end
 
-function PhysicalSceneController:initialize()
+function PhysicalSceneController:initialize(sceneWidth, sceneHeight, sceneBorder)
     SceneController.initialize(self)
-    self.sceneHeight = 600
-    self.sceneWidth = 800
-    self.sceneBorder = 100
+    self.sceneHeight = sceneHeight or 600
+    self.sceneWidth = sceneWidth or 800
+    self.sceneBorder = sceneBorder or 100
     self.world = love.physics.newWorld(-self.sceneBorder, -self.sceneBorder, self.sceneWidth+self.sceneBorder, self.sceneHeight+self.sceneBorder)
     self.objects = {}
     self.objectCount = 0

@@ -5,7 +5,7 @@ require 'HeartObject'
 FallingSceneController = PhysicalSceneController:subclass('FallingSceneController')
 
 function FallingSceneController:initialize()
-    PhysicalSceneController.initialize(self)
+    PhysicalSceneController.initialize(self, 1000, 1000)
     
     self.unnamedObjectIndex = 0
 
@@ -19,8 +19,8 @@ function FallingSceneController:initialize()
     self.cameraScale = 1
     
     -- create floor
-    floor = PhysicalObject:new(400, 0, "static")
-    floor:setSize(1000, 10)
+    floor = PhysicalObject:new(self.screenWidth/2, 0, "static")
+    floor:setSize(self.screenWidth, 10)
     floor:setPlaceholderRectangle(100, 200, 100, 255)
     self:addObjectWithKey(floor, "floor")
     
@@ -29,6 +29,7 @@ function FallingSceneController:initialize()
     
     self.heartMaxInterval = 50
     self:createHeartsForever()
+    
 end
 
 function FallingSceneController:createUmbrella()
@@ -63,8 +64,6 @@ end
 
 function FallingSceneController:mousereleased(x, y, button)
     PhysicalSceneController.mousereleased(self, x, y, button)
-    
-    
 end
 
 function FallingSceneController:update(dt)
@@ -120,13 +119,13 @@ function FallingSceneController:keypressed(key, unicode)
         elseif key == 'z' then
             self.cameraScale = self.cameraScale * 0.9
         elseif key == 'left' then
-            self.cameraX = self.cameraX - 10
+            self.cameraX = self.cameraX - 10/self.cameraScale
         elseif key == 'right' then
-            self.cameraX = self.cameraX + 10
+            self.cameraX = self.cameraX + 10/self.cameraScale
         elseif key == 'up' then
-            self.cameraY = self.cameraY + 10
+            self.cameraY = self.cameraY + 10/self.cameraScale
         elseif key == 'down' then
-            self.cameraY = self.cameraY - 10
+            self.cameraY = self.cameraY - 10/self.cameraScale
         elseif key == 'r' then
             self:createHeart()
         end
