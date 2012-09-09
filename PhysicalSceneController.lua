@@ -155,7 +155,8 @@ function PhysicalSceneController:runDebugScript(scriptText)
         end
     end
     
-    output = func()(self)
+    local output = nil
+    pcall(function () output = func()(self) end)
     if output then
         self:log(tostring(output))
     end
@@ -238,6 +239,23 @@ end
 
 function PhysicalSceneController:lastMousePos()
     return self.lastMouseX, self.lastMouseY
+end
+
+function PhysicalSceneController:typeCounts()
+    local pair
+    local sortedPairs = {}
+    for k, v in pairs(DUTypeCount()) do
+        pair = {}
+        pair.key = k
+        pair.value = v
+        table.insert(sortedPairs, pair)
+    end
+    
+    table.sort(sortedPairs, function (a, b) return a.value < b.value end)
+    
+    for i, v in ipairs(sortedPairs) do
+        self:log("%s: %s", tostring(v.key), tostring(v.value))
+    end
 end
 
 function PhysicalSceneController:initialize(sceneWidth, sceneHeight, sceneBorder)

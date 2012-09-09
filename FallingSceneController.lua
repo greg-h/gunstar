@@ -2,6 +2,8 @@ require 'PhysicalSceneController'
 require 'UmbrellaObject'
 require 'HeartObject'
 
+require 'DebugUtils'
+
 FallingSceneController = PhysicalSceneController:subclass('FallingSceneController')
 
 function FallingSceneController:initialize()
@@ -24,7 +26,7 @@ function FallingSceneController:initialize()
     -- create floor
     floor = PhysicalObject:new(self.screenWidth/2, 0, "static")
     floor:setSize(self.screenWidth, 10)
-    floor:setPlaceholderRectangle(100, 200, 100, 255)
+    floor:setPlaceholderRectangle(183, 214, 133, 255)
     self:addObjectWithKey(floor, "floor")
     
     -- create umbrella
@@ -33,6 +35,10 @@ function FallingSceneController:initialize()
     self.heartMaxInterval = 10
     self.heartMultiplier = 4
     self:createHeartsForever()
+end
+
+function FallingSceneController:start()
+    love.graphics.setBackgroundColor(16, 56, 96)
 end
 
 function FallingSceneController:createUmbrella()
