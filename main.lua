@@ -4,17 +4,12 @@
 require 'PhysicalSceneController'
 require 'PhysicalObject'
 require 'FallingSceneController'
---require 'HelloWorldSceneController'
-
 require 'EmptyPhysicalSceneController'
---require 'EmptySceneController'
 
 
 function love.load()
-    --scene = HelloWorldSceneController:new()
-    scene = FallingSceneController:new()
-    --scene = EmptyPhysicalSceneController:new()
-    --scene = EmptySceneController:new()
+    local scene = FallingSceneController:new()
+    --local scene = EmptyPhysicalSceneController:new()
 
     pushSceneController(scene)
 end

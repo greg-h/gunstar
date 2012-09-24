@@ -1,8 +1,14 @@
 require 'SceneController'
 require 'PhysicalObject'
--- TODO: fix camera and drawing coordinates
 
 PhysicalSceneController = SceneController:subclass('PhysicalSceneController')
+
+function PSCLog(...)
+    local controller = sceneControllers[sceneControllersCount]
+    if instanceOf(PhysicalSceneController, controller) then
+        controller:log(unpack(arg))
+    end
+end
 
 function PhysicalSceneController:start()
 end
@@ -202,37 +208,64 @@ end
 
 function PhysicalSceneController:beginContact()
     return function (a, b, coll)
+        local aObject = a:getUserData()['object']
+        local bObject = b:getUserData()['object']
+        
+        -- special handling for mouse selection
         if not self.mouseObject then
             if a == self.mouseShape then
-                self.mouseObject = b['object']
-                self.lastMouseObject = b['object']
-                self:didSelectObjectWithMouse(b['object'])
+                self.mouseObject = bObject
+                self.lastMouseObject = bObject
+                self:didSelectObjectWithMouse(bObject)
             elseif b == self.mouseShape then
-                self.mouseObject = a['object']
-                self.lastMouseObject = a['object']
-                self:didSelectObjectWithMouse(a['object'])
+                self.mouseObject = aObject
+                self.lastMouseObject = aObject
+                self:didSelectObjectWithMouse(aObject)
             end
+        end
+        
+        if aObject and bObject then
+            aObject:beginContact(bObject, coll, -1)
+            bObject:beginContact(aObject, coll, 1)
         end
     end
 end
 
 function PhysicalSceneController:endContact()
     return function (a, b, coll)
+        local aObject = a:getUserData()['object']
+        local bObject = b:getUserData()['object']
+        
+        if aObject and bObject then
+            aObject:endContact(bObject, coll, -1)
+            bObject:endContact(aObject, coll, 1)
+        end
     end
 end
 
 function PhysicalSceneController:preContactSolve()
     return function (a, b, coll)
+        local aObject = a:getUserData()['object']
+        local bObject = b:getUserData()['object']
+        
+        if aObject and bObject then
+            aObject:preContactSolve(bObject, coll, -1)
+            bObject:preContactSolve(aObject, coll, 1)
+        end
     end
 end
-
 
 function PhysicalSceneController:postContactSolve()
     return function (a, b, coll)
+        local aObject = a:getUserData()['object']
+        local bObject = b:getUserData()['object']
+        
+        if aObject and bObject then
+            aObject:postContactSolve(bObject, coll, -1)
+            bObject:postContactSolve(aObject, coll, 1)
+        end
     end
 end
-
-
 
 function PhysicalSceneController:stop()
 end

@@ -1,6 +1,7 @@
 require 'PhysicalSceneController'
 require 'UmbrellaObject'
 require 'HeartObject'
+require 'BlockDudeObject'
 
 require 'DebugUtils'
 
@@ -20,7 +21,7 @@ function FallingSceneController:initialize()
     
     self.umbrellaJoint = nil
     
-    self.world:setGravity(0, -600)
+    self.world:setGravity(0, -1000)
     self.cameraScale = 1
     
     -- create floor
@@ -32,9 +33,16 @@ function FallingSceneController:initialize()
     -- create umbrella
     self:createUmbrella()
     
-    self.heartMaxInterval = 10
-    self.heartMultiplier = 4
+    
+    -- start creating hearts
+    self.heartMaxInterval = 100
+    self.heartMultiplier = 1
     self:createHeartsForever()
+    
+    
+    -- create block dude
+    self.blockDude = BlockDudeObject:new(100,100)
+    self:addObjectWithKey(self.blockDude, "blockDude")
 end
 
 function FallingSceneController:start()
@@ -58,6 +66,7 @@ end
 function FallingSceneController:createHeart()
     local obj = HeartObject:new(math.random(10, self.screenWidth-10), self.screenHeight + 10)
     self:addObjectWithKey(obj, string.format("heart%d", self.unnamedObjectIndex))
+
     self.unnamedObjectIndex = self.unnamedObjectIndex + 1
 end
 
@@ -77,6 +86,17 @@ function FallingSceneController:mousereleased(x, y, button)
     PhysicalSceneController.mousereleased(self, x, y, button)
 end
 
+function SceneController:keypressed(key, unicode)
+    if key == '.' then
+        self.blockDude:pressedForward()
+    elseif key == ',' then
+        self.blockDude:pressedBackward()
+    end
+end
+
+function SceneController:keyreleased(key, unicode)
+end
+
 function FallingSceneController:update(dt)
     PhysicalSceneController.update(self, dt)
     
@@ -93,41 +113,12 @@ function FallingSceneController:didSelectObjectWithMouse(object)
     -- do nothing
 end
 
-function FallingSceneController:beginContact()
-    -- TODO: must confrom mouseobject to the scene/object collision objects
-    --superCollision = PhysicalSceneController.didCollide(self)
-    return function (a, b, coll)
-        --superCollision(a, b, coll)
-        
-        local heart = nil
-        local umbrella = nil
-        local floor = nil
-        
-        for k, objectData in pairs({a:getUserData(), b:getUserData()}) do
-            object = objectData['object']
-            if instanceOf(HeartObject, object) then
-                heart = object
-            elseif instanceOf(UmbrellaObject, object) then
-                umbrella = object
-            elseif object.name == "floor" then
-                floor = object
-            end
-        end
-        
-        if heart and umbrella then
-            heart:collidedWithUmbrella()
-        elseif heart and floor then
-            heart:collidedWithFloor()
-        end
-    end
-end
-
 function FallingSceneController:keypressed(key, unicode)
     PhysicalSceneController.keypressed(self, key, unicode)
     if not self.showDebugConsole then
-        if key == 'a' then
+        if key == '=' then
             self.cameraScale = self.cameraScale * 1.111
-        elseif key == 'z' then
+        elseif key == '-' then
             self.cameraScale = self.cameraScale * 0.9
         elseif key == 'left' then
             self.cameraX = self.cameraX - 10/self.cameraScale
@@ -137,9 +128,30 @@ function FallingSceneController:keypressed(key, unicode)
             self.cameraY = self.cameraY + 10/self.cameraScale
         elseif key == 'down' then
             self.cameraY = self.cameraY - 10/self.cameraScale
-        elseif key == 'r' then
-            self:createHeart()
         end
+    end
+    
+    if key == 'z' then
+        self.blockDude:goLeftStart()
+    end
+    if key == 'x' then
+        self.blockDude:goRightStart()
+    end
+    if key == ' ' then 
+        self.blockDude:jumpStart()
     end
 end
 
+function FallingSceneController:keyreleased(key, unicode)
+     PhysicalSceneController.keyreleased(self, key, unicode)
+     
+    if key == 'z' then
+        self.blockDude:goLeftStop()
+    end
+    if key == 'x' then
+        self.blockDude:goRightStop()
+    end 
+    if key == ' ' then 
+        self.blockDude:jumpStop()
+    end
+end

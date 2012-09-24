@@ -1,4 +1,5 @@
 require 'PhysicalObject'
+require 'UmbrellaObject'
 
 HeartObject = PhysicalObject:subclass('HeartObject')
 
@@ -21,7 +22,6 @@ function HeartObject:addedToScene(scene)
     local x0 = -self.width/2
     local y0 = self.height/2
     
-    self.drawingScale = 1
     local circle = love.physics.newCircleShape(0, 0, (4.0/10)*(self.height/2))
     self:addShapeWithDensity(circle, 200)
     self.tint = {255,64,64,255}
@@ -29,6 +29,14 @@ function HeartObject:addedToScene(scene)
     self.body:resetMassData()
     self.body:setAngularDamping(5)
 
+end
+
+function HeartObject:beginContact(object, contact, coef)
+    if object.name == 'floor' then
+        self:collidedWithFloor()
+    elseif instanceOf(UmbrellaObject, object) then
+        self:collidedWithUmbrella()
+    end
 end
 
 function HeartObject:collidedWithUmbrella()

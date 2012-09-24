@@ -3,6 +3,9 @@ require 'middleclass'
 PhysicalObject = class('PhysicalObject')
 
 function PhysicalObject:initialize(x, y, bodyType)
+    assert(x)
+    assert(y)
+    assert(bodyType)
     self.initialX = x
     self.initialY = y
     self.bodyType = bodyType
@@ -51,7 +54,6 @@ function PhysicalObject:setPlaceholderRectangle(r, g, b, a)
 end
 
 function PhysicalObject:addedToScene(scene)
-    --self.body = love.physics.newBody(scene.world, self.initialX, self.initialY, self.initialMass, self.initialRotationalInertia)
     self.body = love.physics.newBody(scene.world, self.initialX, self.initialY, self.bodyType)
     if self.setShapeFromSize then
         self:addShapeForSize()
@@ -107,7 +109,7 @@ function PhysicalObject:removedFromScene(scene)
 end
 
 function PhysicalObject:didLeaveWorldBoundaries(scene)
-    self.shouldBeRemoved = true
+    self:deferredRemoval()
 end
 
 function PhysicalObject:deferredRemoval()
@@ -115,6 +117,18 @@ function PhysicalObject:deferredRemoval()
 end 
 
 function PhysicalObject:update(dt)
+end
+
+function PhysicalObject:beginContact(object, contact, coef)
+end
+
+function PhysicalObject:endContact(object, contact, coef)
+end
+
+function PhysicalObject:preContactSolve(object, contact, coef)
+end
+
+function PhysicalObject:postContactSolve(object, contact, coef)
 end
 
 -- TODO fix drawing coordinates for image vs. drawable when scaled.
