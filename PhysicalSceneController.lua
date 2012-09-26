@@ -208,61 +208,81 @@ end
 
 function PhysicalSceneController:beginContact()
     return function (a, b, coll)
-        local aObject = a:getUserData()['object']
-        local bObject = b:getUserData()['object']
+        local aData = a:getUserData()
+        local bData = b:getUserData()
         
-        -- special handling for mouse selection
-        if not self.mouseObject then
-            if a == self.mouseShape then
-                self.mouseObject = bObject
-                self.lastMouseObject = bObject
-                self:didSelectObjectWithMouse(bObject)
-            elseif b == self.mouseShape then
-                self.mouseObject = aObject
-                self.lastMouseObject = aObject
-                self:didSelectObjectWithMouse(aObject)
+        if aData and bData then
+            local aObject = aData['object']
+            local bObject = bData['object']
+            
+            -- special handling for mouse selection
+            if not self.mouseObject then
+                if a == self.mouseShape then
+                    self.mouseObject = bObject
+                    self.lastMouseObject = bObject
+                    self:didSelectObjectWithMouse(bObject)
+                elseif b == self.mouseShape then
+                    self.mouseObject = aObject
+                    self.lastMouseObject = aObject
+                    self:didSelectObjectWithMouse(aObject)
+                end
             end
-        end
-        
-        if aObject and bObject then
-            aObject:beginContact(bObject, coll, -1)
-            bObject:beginContact(aObject, coll, 1)
+            
+            if aObject and bObject then
+                aObject:beginContact(bObject, coll, -1)
+                bObject:beginContact(aObject, coll, 1)
+            end
         end
     end
 end
 
 function PhysicalSceneController:endContact()
     return function (a, b, coll)
-        local aObject = a:getUserData()['object']
-        local bObject = b:getUserData()['object']
+        local aData = a:getUserData()
+        local bData = b:getUserData()
         
-        if aObject and bObject then
-            aObject:endContact(bObject, coll, -1)
-            bObject:endContact(aObject, coll, 1)
+        if aData and bData then
+            local aObject = aData['object']
+            local bObject = bData['object']
+            
+            if aObject and bObject then
+                aObject:endContact(bObject, coll, -1)
+                bObject:endContact(aObject, coll, 1)
+            end
         end
     end
 end
 
 function PhysicalSceneController:preContactSolve()
     return function (a, b, coll)
-        local aObject = a:getUserData()['object']
-        local bObject = b:getUserData()['object']
+        local aData = a:getUserData()
+        local bData = b:getUserData()
         
-        if aObject and bObject then
-            aObject:preContactSolve(bObject, coll, -1)
-            bObject:preContactSolve(aObject, coll, 1)
+        if aData and bData then
+            local aObject = aData['object']
+            local bObject = bData['object']
+            
+            if aObject and bObject then
+                aObject:preContactSolve(bObject, coll, -1)
+                bObject:preContactSolve(aObject, coll, 1)
+            end
         end
     end
 end
 
 function PhysicalSceneController:postContactSolve()
     return function (a, b, coll)
-        local aObject = a:getUserData()['object']
-        local bObject = b:getUserData()['object']
+        local aData = a:getUserData()
+        local bData = b:getUserData()
         
-        if aObject and bObject then
-            aObject:postContactSolve(bObject, coll, -1)
-            bObject:postContactSolve(aObject, coll, 1)
+        if aData and bData then
+            local aObject = aData['object']
+            local bObject = bData['object']
+        
+            if aObject and bObject then
+                aObject:postContactSolve(bObject, coll, -1)
+                bObject:postContactSolve(aObject, coll, 1)
+            end
         end
     end
 end
