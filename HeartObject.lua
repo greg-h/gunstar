@@ -55,5 +55,5 @@ function HeartObject:collidedWithUmbrella()
 end
 
 function HeartObject:collidedWithFloor()
-    self:deferredRemoval()
+    --self:deferredRemoval()
 end

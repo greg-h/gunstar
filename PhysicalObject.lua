@@ -108,6 +108,12 @@ function PhysicalObject:removedFromScene(scene)
     self.body = nil
 end
 
+function PhysicalObject:didSelectWithMouse()
+end
+
+function PhysicalObject:didDeselectWithMouse()
+end
+
 function PhysicalObject:didLeaveWorldBoundaries(scene)
     self:deferredRemoval()
 end

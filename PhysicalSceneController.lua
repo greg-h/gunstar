@@ -130,6 +130,13 @@ function PhysicalSceneController:mousepressed(x, y, button)
         self.mouseBody = love.physics.newBody(self.world, x, y, 0, 0)
         self.mouseShape = love.physics.newCircleShape(0, 0, 1)
         self.mouseFixture = love.physics.newFixture(self.mouseBody, self.mouseShape)
+
+        local collisionData = setmetatable({}, {__mode="kv"})
+        collisionData['object'] = nil
+        collisionData['shape'] = self.mouseShape
+        collisionData['fixture'] = fixture
+        self.mouseFixture:setUserData(collisionData)
+        
         self.mouseFixture:setSensor(true)
     end
 end
@@ -140,6 +147,11 @@ function PhysicalSceneController:mousereleased(x, y, button)
             self.mouseJoint:destroy()
             self.mouseJoint = nil
         end
+        
+        if instanceOf(PhysicalObject, self.mouseObject) then
+            self.mouseObject:didDeselectWithMouse()
+        end
+        
         self.mouseFixture:setMask(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16)
         self.mouseShape = nil
         self.mouseBody = nil        
@@ -198,10 +210,13 @@ end
 
 function PhysicalSceneController:grabObjectWithMouse(object)
     self:log("Grabbed Obj: %s", object.name)
-    self.mouseJoint = love.physics.newMouseJoint(object.body, self:getWorldPositionAtPosition(love.mouse.getPosition()))
+    self:timerWithDurationAndCallback(0, function () 
+        self.mouseJoint = love.physics.newMouseJoint(object.body, self:getWorldPositionAtPosition(love.mouse.getPosition()))
+    end)
 end
 
 function PhysicalSceneController:didSelectObjectWithMouse(object)
+    object:didSelectWithMouse()
     self:grabObjectWithMouse(object)
 end
     
@@ -214,14 +229,16 @@ function PhysicalSceneController:beginContact()
         if aData and bData then
             local aObject = aData['object']
             local bObject = bData['object']
+            local aShape = aData['shape']
+            local bShape = bData['shape']
             
             -- special handling for mouse selection
             if not self.mouseObject then
-                if a == self.mouseShape then
+                if aShape == self.mouseShape then
                     self.mouseObject = bObject
                     self.lastMouseObject = bObject
                     self:didSelectObjectWithMouse(bObject)
-                elseif b == self.mouseShape then
+                elseif bShape == self.mouseShape then
                     self.mouseObject = aObject
                     self.lastMouseObject = aObject
                     self:didSelectObjectWithMouse(aObject)

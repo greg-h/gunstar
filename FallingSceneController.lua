@@ -70,6 +70,7 @@ function FallingSceneController:createHeart()
     self.unnamedObjectIndex = self.unnamedObjectIndex + 1
 end
 
+--[[
 function FallingSceneController:mousepressed(x, y, button)
     PhysicalSceneController.mousepressed(self, x, y, button)
     
@@ -81,21 +82,13 @@ function FallingSceneController:mousepressed(x, y, button)
         self.umbrellaJoint = love.physics.newMouseJoint(self.umbrellaObject.body, self:getWorldPositionAtPosition(love.mouse.getPosition()))
     end
 end
+]]
 
+--[[
 function FallingSceneController:mousereleased(x, y, button)
     PhysicalSceneController.mousereleased(self, x, y, button)
 end
-
-function SceneController:keypressed(key, unicode)
-    if key == '.' then
-        self.blockDude:pressedForward()
-    elseif key == ',' then
-        self.blockDude:pressedBackward()
-    end
-end
-
-function SceneController:keyreleased(key, unicode)
-end
+]]
 
 function FallingSceneController:update(dt)
     PhysicalSceneController.update(self, dt)
@@ -109,9 +102,11 @@ function FallingSceneController:update(dt)
     end
 end
 
+--[[
 function FallingSceneController:didSelectObjectWithMouse(object)
     -- do nothing
 end
+]]
 
 function FallingSceneController:keypressed(key, unicode)
     PhysicalSceneController.keypressed(self, key, unicode)
